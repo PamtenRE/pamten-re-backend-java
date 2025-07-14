@@ -28,9 +28,16 @@ public class SecurityConfig {
                                 "/api/auth/v1/login",
                                 "/api/recruiter/jobs/public/**",
                                 "/swagger-ui.html",
+                                "/api/auth/v1/forgot-password",
+                                "/api/auth/v1/reset-password",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")
                         .permitAll()
+                        .requestMatchers(
+                                "/api/jobs/v1/post",
+                                "/api/jobs/v1/update/**",
+                                "/api/jobs/v1/delete/**"
+                        ).hasAuthority("Recruiter")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
