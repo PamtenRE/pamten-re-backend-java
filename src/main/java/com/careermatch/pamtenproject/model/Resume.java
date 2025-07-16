@@ -24,8 +24,9 @@ public class Resume {
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "file_path", nullable = false)
-    private String filePath;
+    @Lob
+    @Column(name = "file_data", nullable = false)
+    private byte[] fileData; // <-- Store PDF here
 
     @Column(name = "file_size")
     private Long fileSize;

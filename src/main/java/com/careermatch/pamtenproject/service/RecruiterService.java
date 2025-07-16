@@ -24,14 +24,31 @@ public class RecruiterService {
         Recruiter recruiter;
         if (existing.isPresent()) {
             recruiter = existing.get();
-            // Update only fields that exist in the new schema
             recruiter.setDateOfBirth(recruiterData.getDateOfBirth());
             recruiter.setGender(recruiterData.getGender());
+            recruiter.setIndustry(recruiterData.getIndustry());
+
+            // Update employer and its fields
+            if (recruiterData.getEmployer() != null) {
+                if (recruiter.getEmployer() == null) {
+                    recruiter.setEmployer(recruiterData.getEmployer());
+                } else {
+                    recruiter.getEmployer().setOrganizationName(recruiterData.getEmployer().getOrganizationName());
+                    recruiter.getEmployer().setHrName(recruiterData.getEmployer().getHrName());
+                    recruiter.getEmployer().setHrEmail(recruiterData.getEmployer().getHrEmail());
+                    recruiter.getEmployer().setEndClient(recruiterData.getEmployer().getEndClient());
+                    recruiter.getEmployer().setVendorName(recruiterData.getEmployer().getVendorName());
+                    recruiter.getEmployer().setGender(recruiterData.getEmployer().getGender());
+                    // ...add any other employer fields you want to update
+                }
+            }
         } else {
             recruiter = Recruiter.builder()
                     .user(user)
                     .dateOfBirth(recruiterData.getDateOfBirth())
                     .gender(recruiterData.getGender())
+                    .industry(recruiterData.getIndustry())
+                    .employer(recruiterData.getEmployer())
                     .build();
         }
         return recruiterRepository.save(recruiter);
