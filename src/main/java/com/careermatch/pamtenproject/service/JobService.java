@@ -4,6 +4,7 @@ import com.careermatch.pamtenproject.dto.JobListingPageResponse;
 import com.careermatch.pamtenproject.dto.JobListingResponse;
 import com.careermatch.pamtenproject.dto.JobPostRequest;
 import com.careermatch.pamtenproject.dto.JobResponse;
+import com.careermatch.pamtenproject.dto.JobUpdateRequest;
 import com.careermatch.pamtenproject.model.*;
 import com.careermatch.pamtenproject.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -161,6 +162,55 @@ public class JobService {
         return jobs.stream().map(this::convertToJobResponse).collect(Collectors.toList());
     }
 
+    public JobResponse updateJob(Integer jobId, JobUpdateRequest request) {
+        Job job = jobRepository.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Update job fields
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setRequiredSkills(request.getRequiredSkills());
+        job.setJobType(request.getJobType());
+        job.setBillRate(request.getBillRate());
+        job.setDurationMonths(request.getDurationMonths());
+
+        // Create or find updated location
+        JobPostRequest tempRequest = new JobPostRequest();
+        tempRequest.setCity(request.getCity());
+        tempRequest.setState(request.getState());
+        tempRequest.setZipCode(request.getZipCode());
+        tempRequest.setCountry(request.getCountry());
+        tempRequest.setRegion(request.getRegion());
+        tempRequest.setStreetAddress(request.getStreetAddress());
+
+        Location location = createOrFindLocation(tempRequest);
+        job.setLocation(location);
+
+        // Update industries
+        Set<Industry> industries = request.getIndustryNames().stream()
+            .map(name -> industryRepository.findByIndustryName(name).orElse(null))
+            .filter(industry -> industry != null)
+            .collect(Collectors.toSet());
+        job.setIndustries(industries);
+
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+
+        return convertToJobResponse(job);
+    }
+
+    public void deleteJob(Integer jobId, String userId) {
+        Job job = jobRepository.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // Validate that this user owns the job
+        if (!job.getEmployer().getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this job");
+        }
+
+        jobRepository.delete(job);
+    } 
+
     private JobResponse convertToJobResponse(Job job) {
         return JobResponse.builder()
                 .jobId(job.getJobId())
@@ -184,4 +234,5 @@ public class JobService {
                         job.getIndustries().stream().map(Industry::getIndustryName).collect(Collectors.toList()) : null)
                 .build();
     }
+    
 }
