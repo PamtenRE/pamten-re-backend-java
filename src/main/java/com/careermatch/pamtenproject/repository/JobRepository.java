@@ -1,6 +1,8 @@
 package com.careermatch.pamtenproject.repository;
 
 import com.careermatch.pamtenproject.model.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,4 +17,8 @@ public interface JobRepository extends JpaRepository<Job, Integer> {
 
     @Query("SELECT j FROM Job j WHERE j.isActive = true AND j.title LIKE %:keyword% OR j.description LIKE %:keyword%")
     List<Job> searchJobsByKeyword(String keyword);
+
+    // Fix: Use custom query instead of method name
+    @Query("SELECT j FROM Job j WHERE j.isActive = true ORDER BY j.postedDate DESC")
+    Page<Job> findActiveJobsOrderByPostedDateDesc(Pageable pageable);
 }

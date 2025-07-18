@@ -1,9 +1,12 @@
 package com.careermatch.pamtenproject.controller;
 
+import com.careermatch.pamtenproject.dto.JobListingPageResponse;
+import com.careermatch.pamtenproject.dto.JobListingResponse;
 import com.careermatch.pamtenproject.dto.JobPostRequest;
 import com.careermatch.pamtenproject.dto.JobResponse;
 import com.careermatch.pamtenproject.service.JobService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +25,19 @@ public class JobController {
         try {
             JobResponse response = jobService.postJob(request);
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllJobs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        try {
+            JobListingPageResponse jobs = jobService.getAllJobs(page, size);
+            return ResponseEntity.ok(jobs);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

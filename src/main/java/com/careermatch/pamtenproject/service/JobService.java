@@ -1,5 +1,7 @@
 package com.careermatch.pamtenproject.service;
 
+import com.careermatch.pamtenproject.dto.JobListingPageResponse;
+import com.careermatch.pamtenproject.dto.JobListingResponse;
 import com.careermatch.pamtenproject.dto.JobPostRequest;
 import com.careermatch.pamtenproject.dto.JobResponse;
 import com.careermatch.pamtenproject.model.*;
@@ -7,6 +9,11 @@ import com.careermatch.pamtenproject.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,6 +123,33 @@ public class JobService {
                 .build();
 
         return locationRepository.save(newLocation);
+    }
+    public JobListingPageResponse getAllJobs(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Job> jobPage = jobRepository.findActiveJobsOrderByPostedDateDesc(pageable);
+
+        return JobListingPageResponse.builder()
+                .jobs(jobPage.getContent().stream()
+                        .map(this::convertToJobListingResponse)
+                        .collect(Collectors.toList()))
+                .currentPage(page)
+                .totalPages(jobPage.getTotalPages())
+                .totalElements(jobPage.getTotalElements())
+                .pageSize(size)
+                .hasNext(jobPage.hasNext())
+                .hasPrevious(jobPage.hasPrevious())
+                .build();
+    }
+
+    private JobListingResponse convertToJobListingResponse(Job job) {
+        return JobListingResponse.builder()
+                .jobId(job.getJobId())
+                .title(job.getTitle())
+                .city(job.getLocation() != null ? job.getLocation().getCity() : null)
+                .state(job.getLocation() != null ? job.getLocation().getState() : null)
+                .organizationName(job.getEmployer().getOrganizationName())
+                .postedDate(job.getPostedDate())
+                .build();
     }
 
     public List<JobResponse> getJobsByEmployer(String userId) {

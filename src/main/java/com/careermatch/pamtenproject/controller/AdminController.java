@@ -22,3 +22,4 @@ public class AdminController {
         return ResponseEntity.ok(userRepository.findAll());
     }
 }
+

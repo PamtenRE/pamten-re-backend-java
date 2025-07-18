@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JobResponse {
+public class    JobResponse {
     private Integer jobId;
     private String employerNumber;
     private String organizationName;
