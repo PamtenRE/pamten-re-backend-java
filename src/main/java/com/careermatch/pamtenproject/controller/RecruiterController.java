@@ -1,5 +1,6 @@
 package com.careermatch.pamtenproject.controller;
 
+import com.careermatch.pamtenproject.dto.RecruiterProfileResponse;
 import com.careermatch.pamtenproject.model.Recruiter;
 import com.careermatch.pamtenproject.model.User;
 import com.careermatch.pamtenproject.repository.UserRepository;
@@ -21,25 +22,25 @@ public class RecruiterController {
     // Get the current recruiter's profile
     @GetMapping("/profile")
     @PreAuthorize("hasAuthority('Recruiter')")
-    public ResponseEntity<Recruiter> getMyProfile(Authentication authentication) {
+    public ResponseEntity<RecruiterProfileResponse> getMyProfile(Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Recruiter recruiter = recruiterService.getRecruiterProfile(user.getUserId());
-        return ResponseEntity.ok(recruiter);
+        RecruiterProfileResponse response = recruiterService.getRecruiterProfileResponse(user.getUserId());
+        return ResponseEntity.ok(response);
     }
 
     // Create or update the current recruiter's profile
     @PostMapping("/profile")
     @PreAuthorize("hasAuthority('Recruiter')")
-    public ResponseEntity<Recruiter> createOrUpdateProfile(
+    public ResponseEntity<RecruiterProfileResponse> createOrUpdateProfile(
             Authentication authentication,
             @RequestBody Recruiter recruiterData
     ) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Recruiter recruiter = recruiterService.createOrUpdateRecruiterProfile(user.getUserId(), recruiterData);
-        return ResponseEntity.ok(recruiter);
+        RecruiterProfileResponse response = recruiterService.createOrUpdateRecruiterProfileResponse(user.getUserId(), recruiterData);
+        return ResponseEntity.ok(response);
     }
 }

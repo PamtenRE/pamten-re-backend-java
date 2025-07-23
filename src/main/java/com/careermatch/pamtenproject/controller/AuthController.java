@@ -2,11 +2,15 @@ package com.careermatch.pamtenproject.controller;
 
 import com.careermatch.pamtenproject.dto.*;
 import com.careermatch.pamtenproject.service.AuthService;
+import com.careermatch.pamtenproject.model.Gender;
+import com.careermatch.pamtenproject.repository.GenderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.careermatch.pamtenproject.dto.UpdatePasswordRequest;
 import com.careermatch.pamtenproject.dto.UpdateProfileRequest;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth/v1")
@@ -14,6 +18,7 @@ import com.careermatch.pamtenproject.dto.UpdateProfileRequest;
 public class AuthController {
 
     private final AuthService authService;
+    private final GenderRepository genderRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest request) {
@@ -58,8 +63,8 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         try {
-            authService.requestPasswordReset(request);
-            return ResponseEntity.ok("Password reset instructions sent to your email.");
+            authService.forgotPassword(request.getEmail());
+            return ResponseEntity.ok("Password reset email sent successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
@@ -68,11 +73,16 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
         try {
-            authService.resetPassword(request);
-            return ResponseEntity.ok("Password has been reset successfully.");
+            authService.resetPassword(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok("Password reset successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/genders")
+    public ResponseEntity<List<Gender>> getAllGenders() {
+        return ResponseEntity.ok(genderRepository.findAll());
     }
 
     @PostMapping("/update-profile")

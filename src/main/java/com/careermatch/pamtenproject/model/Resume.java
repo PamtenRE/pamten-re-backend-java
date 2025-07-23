@@ -11,22 +11,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Resume {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "resume_id")
     private Integer resumeId;
 
     @ManyToOne
-    @JoinColumn(name = "candidate_id", nullable = false)
+    @JoinColumn(name = "candidate_id")
     private Candidate candidate;
 
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Lob
-    @Column(name = "file_data", nullable = false)
-    private byte[] fileData; // <-- Store PDF here
+    @Column(name = "file_path", nullable = false)
+    private String filePath; // GCS URL or path
 
     @Column(name = "file_size")
     private Long fileSize;
@@ -35,5 +33,11 @@ public class Resume {
     private LocalDateTime uploadDate;
 
     @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive;
+
+    @Column(name = "is_default")
+    private Boolean isDefault; // <-- Add this
+
+    @Column(name = "custom_name")
+    private String customName;
 }

@@ -15,6 +15,9 @@ public interface ResumeRepository extends JpaRepository<Resume, Integer> {
     // Find all active resumes for a candidate
     List<Resume> findByCandidateCandidateIdAndIsActiveTrue(Integer candidateId);
 
-    // (Optional) Find the most recent resume for a candidate
+    // Find the most recent resume for a candidate
     Optional<Resume> findTopByCandidateCandidateIdOrderByUploadDateDesc(Integer candidateId);
+
+    // Find the default resume for a candidate (should be at most one)
+    Optional<Resume> findByCandidateCandidateIdAndIsDefaultTrue(Integer candidateId);
 }

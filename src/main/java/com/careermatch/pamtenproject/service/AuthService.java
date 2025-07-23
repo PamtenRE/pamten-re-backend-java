@@ -150,8 +150,8 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void requestPasswordReset(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = UUID.randomUUID().toString();
@@ -162,18 +162,15 @@ public class AuthService {
         emailService.sendPasswordResetEmail(user.getEmail(), token);
     }
 
-    public void resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void resetPassword(String token, String newPassword) {
+        User user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
 
-        if (user.getResetToken() == null || !user.getResetToken().equals(request.getToken())) {
-            throw new RuntimeException("Invalid or expired reset token");
-        }
         if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Reset token has expired");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);

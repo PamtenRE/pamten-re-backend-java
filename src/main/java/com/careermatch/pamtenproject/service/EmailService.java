@@ -14,7 +14,7 @@ public class EmailService {
     public void sendWelcomeEmail(String to, String fullName, String userId, String roleName) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Welcome to CareerMatch - Registration Successful!");
+        message.setSubject("Welcome to RecruitEdge: Cut Through the Noise - Registration Successful!");
         
         String roleSpecificMessage = "";
         if ("Recruiter".equalsIgnoreCase(roleName)) {
@@ -25,13 +25,13 @@ public class EmailService {
         
         message.setText(
                 "Dear " + fullName + ",\n\n" +
-                        "Welcome to CareerMatch! Your registration has been completed successfully.\n\n" +
+                        "Welcome to RecruitEdge! Your registration has been completed successfully.\n\n" +
                         "Your User ID: " + userId + "\n" +
                         "Your Role: " + roleName + "\n\n" +
                         roleSpecificMessage + "\n\n" +
                         "You can now log in to your account using your User ID and password.\n\n" +
                         "Best regards,\n" +
-                        "The CareerMatch Team"
+                        "The RecruitEdge Team"
         );
 
         mailSender.send(message);
@@ -40,7 +40,7 @@ public class EmailService {
     public void sendUserIdEmail(String to, String fullName, String userId) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("Your CareerMatch User ID");
+        message.setSubject("Your RecruitEdge User ID");
         message.setText(
                 "Dear " + fullName + ",\n\n" +
                         "Thank you for registering with CareerMatch!\n\n" +

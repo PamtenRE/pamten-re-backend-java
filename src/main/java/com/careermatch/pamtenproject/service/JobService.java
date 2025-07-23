@@ -162,9 +162,14 @@ public class JobService {
         return jobs.stream().map(this::convertToJobResponse).collect(Collectors.toList());
     }
 
-    public JobResponse updateJob(Integer jobId, JobUpdateRequest request) {
+    public JobResponse updateJob(Integer jobId, JobUpdateRequest request, String userId) {
         Job job = jobRepository.findById(jobId)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        // SECURITY CHECK: Validate that this user owns the job
+        if (!job.getEmployer().getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to update this job");
+        }
 
         // Update job fields
         job.setTitle(request.getTitle());
@@ -188,9 +193,9 @@ public class JobService {
 
         // Update industries
         Set<Industry> industries = request.getIndustryNames().stream()
-            .map(name -> industryRepository.findByIndustryName(name).orElse(null))
-            .filter(industry -> industry != null)
-            .collect(Collectors.toSet());
+                .map(name -> industryRepository.findByIndustryName(name).orElse(null))
+                .filter(industry -> industry != null)
+                .collect(Collectors.toSet());
         job.setIndustries(industries);
 
         job.setUpdatedAt(LocalDateTime.now());

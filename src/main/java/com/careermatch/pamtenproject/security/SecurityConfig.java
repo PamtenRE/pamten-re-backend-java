@@ -3,6 +3,7 @@ package com.careermatch.pamtenproject.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,20 +25,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/v1/register",
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/v1/register",
                                 "/api/auth/v1/login",
+                                "/api/auth/v1/genders",
                                 "/api/recruiter/jobs/public/**",
                                 "/swagger-ui.html",
                                 "/api/auth/v1/forgot-password",
                                 "/api/auth/v1/reset-password",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**")
-                        .permitAll()
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .requestMatchers(
                                 "/api/jobs/v1/post",
                                 "/api/jobs/v1/update/**",
                                 "/api/jobs/v1/delete/**"
                         ).hasAuthority("Recruiter")
+                        .requestMatchers(
+                                "/api/candidate/v1/**"
+                        ).hasAuthority("Candidate")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

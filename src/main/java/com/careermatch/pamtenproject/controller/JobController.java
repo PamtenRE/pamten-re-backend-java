@@ -5,11 +5,15 @@ import com.careermatch.pamtenproject.dto.JobListingResponse;
 import com.careermatch.pamtenproject.dto.JobPostRequest;
 import com.careermatch.pamtenproject.dto.JobUpdateRequest;
 import com.careermatch.pamtenproject.dto.JobResponse;
+import com.careermatch.pamtenproject.repository.UserRepository;
 import com.careermatch.pamtenproject.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import com.careermatch.pamtenproject.model.User;
 
 import java.util.List;
 
@@ -19,6 +23,7 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
+    private final UserRepository userRepository;
 
     @PostMapping("/post")
     public ResponseEntity<?> postJob(@RequestBody JobPostRequest request) {
@@ -54,17 +59,25 @@ public class JobController {
         }
     }
 
-    @PutMapping("/{jobId}")
-    public ResponseEntity<?> updateJob(@PathVariable Integer jobId, @RequestBody JobUpdateRequest request) {
+    @PutMapping("update/{jobId}")
+    public ResponseEntity<?> updateJob(
+            @PathVariable Integer jobId,
+            @RequestBody JobUpdateRequest request,
+            Authentication authentication
+    ) {
         try {
-            JobResponse updated = jobService.updateJob(jobId, request);
+            String email = authentication.getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            JobResponse updated = jobService.updateJob(jobId, request, user.getUserId());
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
     
-    @DeleteMapping("/{jobId}/{userId}")
+    @DeleteMapping("delete/{jobId}/{userId}")
     public ResponseEntity<?> deleteJob(@PathVariable Integer jobId, @PathVariable String userId) {
         try {
             jobService.deleteJob(jobId, userId);
