@@ -23,33 +23,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(
-                                "/api/auth/v1/register",
-                                "/api/auth/v1/login",
-                                "/api/auth/v1/genders",
-                                "/api/recruiter/jobs/public/**",
-                                "/swagger-ui.html",
-                                "/api/auth/v1/forgot-password",
-                                "/api/auth/v1/reset-password",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/api/jobs/v1/post",
-                                "/api/jobs/v1/update/**",
-                                "/api/jobs/v1/delete/**"
-                        ).hasAuthority("Recruiter")
-                        .requestMatchers(
-                                "/api/candidate/v1/**"
-                        ).hasAuthority("Candidate")
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .userDetailsService(customUserDetailsService)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                // Publicly accessible endpoints
+                .requestMatchers(
+                    "/api/auth/v1/register",
+                    "/api/auth/v1/login",
+                    "/api/auth/v1/genders",
+                    "/api/recruiter/jobs/public/**",
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/api/auth/v1/forgot-password",
+                    "/api/auth/v1/reset-password",
+                    "/api/test/candidate/upload-resume"
+                ).permitAll()
+
+                // Endpoints accessible only by 'Recruiter' role
+                .requestMatchers(
+                    "/api/jobs/v1/post",
+                    "/api/jobs/v1/update/**",
+                    "/api/jobs/v1/delete/**"
+                ).hasAuthority("Recruiter")
+
+                // Endpoints accessible only by 'Candidate' role
+                .requestMatchers("/api/candidate/v1/**").hasAuthority("Candidate")
+
+                // Any other request requires authentication
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .userDetailsService(customUserDetailsService)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
