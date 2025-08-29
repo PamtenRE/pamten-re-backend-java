@@ -1,10 +1,15 @@
 package com.careermatch.pamtenproject.service;
 
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.SignUrlOption;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class GcsService {
@@ -34,4 +39,13 @@ public class GcsService {
         }
     }
     
+    public String generateV4GetUrl(String bucket, String object, Duration ttl) {
+        BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(bucket, object)).build();
+        URL url = storage.signUrl(
+                blobInfo,
+                ttl.toMinutes(), TimeUnit.MINUTES,
+                SignUrlOption.withV4Signature()
+        );
+        return url.toString();
+    }
 }
