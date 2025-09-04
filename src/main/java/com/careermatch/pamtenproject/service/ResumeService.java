@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.net.URI;
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -68,11 +70,13 @@ public class ResumeService {
 
         try {
             String gcsPath = gcsService.uploadFile(file, candidate.getCandidateId());
+            String fileUrl = gcsPath.replace("gs://", "https://storage.googleapis.com/");
+            log.info("Resume URL to store: {}", fileUrl);
 
             Resume resume = Resume.builder()
                     .candidate(candidate)
                     .fileName(file.getOriginalFilename())
-                    .filePath(gcsPath)
+                    .filePath(fileUrl) 
                     .fileSize(file.getSize())
                     .uploadDate(LocalDateTime.now())
                     .isActive(true)
@@ -187,4 +191,40 @@ public class ResumeService {
                 .uploadDate(resume.getUploadDate())
                 .build();
     }
+
+    public ResumeResponse getResume(Integer resumeId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Candidate candidate = candidateRepository.findByUserUserId(user.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Candidate profile not found"));
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResumeNotFoundException("Resume not found"));
+
+        if (!resume.getCandidate().getCandidateId().equals(candidate.getCandidateId())) {
+            throw new UnauthorizedActionException("You are not authorized to view this resume");
+        }
+
+        return convertToResumeResponse(resume); 
+    }
+
+    public String getSignedDownloadUrl(Integer resumeId, String userEmail) {
+        ResumeResponse res = getResume(resumeId, userEmail); 
+
+        // Parse bucket and object name from stored filePath
+        String fileUrl = res.getFilePath();  
+        URI uri = URI.create(fileUrl);
+        String path = uri.getPath(); 
+        if (path.startsWith("/")) path = path.substring(1);
+
+        int slash = path.indexOf('/');
+        if (slash <= 0) throw new FileStorageException("Invalid GCS URL: " + fileUrl, null);
+
+        String bucket = path.substring(0, slash);
+        String object = path.substring(slash + 1);
+
+        // Create a signed URL valid for 10 minutes
+        return gcsService.generateV4GetUrl(bucket, object, Duration.ofMinutes(10));
+    }    
 }
+

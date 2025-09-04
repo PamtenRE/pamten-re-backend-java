@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpHeaders;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -61,4 +62,16 @@ public class ResumeController {
         ResumeResponse response = resumeService.setDefaultResume(resumeId, email);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{resumeId}/download")
+    public ResponseEntity<Void> downloadResume(
+            @PathVariable @Min(1) Integer resumeId,
+            @RequestParam("email") @Email String email
+    ) {
+        String signedUrl = resumeService.getSignedDownloadUrl(resumeId, email);
+        return ResponseEntity.status(302) // redirect
+                .header(HttpHeaders.LOCATION, signedUrl)
+                .build();
+    }
+
 }
