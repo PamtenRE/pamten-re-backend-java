@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "recruitedge-resumes",
+  "private_key_id": "ee2f69fac93e3837db6c0222f78edcdc0c9251e7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCjlcAJW8q/oXoP\nGHP1xtDOcpkKayes8rLZSotO8jaWuhYHINJS7nr/t94P8GXxVMbv7kbzjELzdXne\nqdr9XyQoibxLJ8a0QgTtcr7HkuVQzLTbWH6VjjXBgZ20WkXR5QfSB1z7J4o9B+9b\nfqO+NiUh5IkHXruGC9mlBQXztMsK18Ilcxt+wsZ/6q63nWGxAqJbdsKrtOcPr6+A\nEDzRW78fwSmrmUbGYSSolv0LUoa5oa6cdybImaV/SYb8D1YpzKZi0FsASWedFuX1\nYq6B6Cc1nOafrsiZ7sumHpSakX2zleP4DzgvfgRPW9VrUQWFNJODPmY1E+ty4pxu\n/ry/IYZFAgMBAAECggEAI3E8UnrCFptelfszEp7hGj2vhVeamMjbsaMKRFBLvgPy\n5lf44dF8Mj/s27C28Z7v3EeYtUdgMR30iebsxMUykRrogjMLxP3h0e1wws5Do2o6\nzCRkBrSxVmvmFo+RfYy9EUcZoOvb8mWv+TeatAlIqct5WfCvOfeC0BNiyv7SmBY2\n80arkf4RR4C+kM8h2Z8cL4EHBjHvYKZcaykMdV6lX2tR2CN8p2Slitp7cj5lEdRk\na0v8ou5/NIiziP9hziMrGdutt0l+BRstfuRtrWSHRVxGqRBHy3uaF9Fwr7MbfvCI\n06px6cVtQZUNgnXjttAyREWMJRMUPYqD+8LgB6ZfcQKBgQDOLEF9KxqRWilK46DV\nsiGcypmHiuLM5z4UNZyuqh9Y1YZ0kpirhBDShbF6LUI5nx+QkbjXR4ySiO8JLQc7\nrI3WADS66XARiLsMcdeRXzzrG/uLT0ntn95SRZ1Mza4JcpfksWreB3PiLJQXmMrU\nSa4CT+SEdrEPoK3x6enHu8WQcQKBgQDLHp2X16Z4zzu2OF58uGradMjUnFEA22og\ntwchaX7eWo0dIF7MgfuRLf0ObBq+UDjjORo7tahbPrlcA5jYRb5B78aAdAmpiydT\nEcWilMj2OvKAOh/jNPVVnPcOPWcnQCqzOJMK9IBwoB9ER19sC1ujbuCqHf2VW0yP\nCdnSIX39FQKBgAnfMJuPrsv65zNAxvi0eMuLH+LPkaCCCgTptEDgwHN+ddurEUhV\nIIEUCbVx6VPc/KPtdk5IjMCPcfKch1YiIwB2LhAtEUKlq18jLFE3oDEZu+elukJ4\nfyqtTqTYzFaDeCZpIFbVQIU54TVoCX40sPJHZQe6ryuyY+HLc3gu03zhAoGAQIl2\nuyMa0rHNoCUi6G/UC5sloGAWYLZWbxSYYGZbmByfT4zUchgurT82c1mn2aY1nQSs\nsCIU3wD79h9yde0a+WpM4M19sG/1S7CO4gxyGcI7AMD3FsLh3JTl7pFV8CO0LYOh\nPM7Y7HAD3zbqO7MUJ8Z3/bVPuB/tIFmZ6ukXVc0CgYBpQSfFoZGFzlebOyUPd9qK\nhk0qUE5bBhHAManAaFuegDo2+XbCnsLcU1IqRGo5l9FJFHPecNG50ySIYxAtZHRV\n/N1SwrhueMR3GQr8Aq1zTbvwV8O+PobZbtn7v19ZK5tAy4BBuB5pZizP2H82zX0O\nEcDID3qRGcyZoMZ56upfPg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "recruitedgeresumes@recruitedge-resumes.iam.gserviceaccount.com",
+  "client_id": "111995293948119705958",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/recruitedgeresumes%40recruitedge-resumes.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
