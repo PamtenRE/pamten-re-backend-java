@@ -36,7 +36,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/api/auth/v1/forgot-password",
                     "/api/auth/v1/reset-password"
-                ).permitAll()
+                ).permitAll().requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // Endpoints accessible only by 'Recruiter' role
                     .requestMatchers(
@@ -44,6 +44,7 @@ public class SecurityConfig {
                             "/api/auth/profile/v1",       // ✅ Added leading slash
                             "/api/jobs/v1/update/**",
                             "/api/jobs/v1/delete/**"
+                            "/api/jobs/v1/employer/**",
                     ).hasAuthority("Recruiter")
 
                     .requestMatchers(
