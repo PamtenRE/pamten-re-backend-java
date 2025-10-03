@@ -8,6 +8,7 @@ import com.careermatch.pamtenproject.model.User;
 import com.careermatch.pamtenproject.repository.CandidateRepository;
 import com.careermatch.pamtenproject.repository.ResumeRepository;
 import com.careermatch.pamtenproject.repository.UserRepository;
+import com.careermatch.pamtenproject.service.AzureBlobService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.net.URI;
-import java.time.Duration;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,8 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
-    private final GcsService gcsService;
+    private final AzureBlobService azureBlobService;
+
 
     @Transactional
     public ResumeResponse uploadResume(MultipartFile file, Boolean setAsDefault, String customName, String userEmail) throws IOException {
@@ -69,9 +70,13 @@ public class ResumeService {
         }
 
         try {
-            String gcsPath = gcsService.uploadFile(file, candidate.getCandidateId());
-            String fileUrl = gcsPath.replace("gs://", "https://storage.googleapis.com/");
-            log.info("Resume URL to store: {}", fileUrl);
+            String blobPath = String.format("candidates/%d/%d_%s",
+            candidate.getCandidateId(),
+            System.currentTimeMillis(),
+            file.getOriginalFilename());
+
+            String fileUrl = azureBlobService.upload(file, blobPath);
+            log.info("Resume URL to store (Azure): {}", fileUrl);
 
             Resume resume = Resume.builder()
                     .candidate(candidate)
@@ -209,22 +214,15 @@ public class ResumeService {
     }
 
     public String getSignedDownloadUrl(Integer resumeId, String userEmail) {
-        ResumeResponse res = getResume(resumeId, userEmail); 
+        ResumeResponse res = getResume(resumeId, userEmail);
 
-        // Parse bucket and object name from stored filePath
-        String fileUrl = res.getFilePath();  
-        URI uri = URI.create(fileUrl);
-        String path = uri.getPath(); 
-        if (path.startsWith("/")) path = path.substring(1);
+        String fileUrl = res.getFilePath(); 
+        if (fileUrl == null || !fileUrl.contains(".blob.core.windows.net/")) {
+            throw new FileStorageException("Invalid Azure blob URL: " + fileUrl, null);
+        }
 
-        int slash = path.indexOf('/');
-        if (slash <= 0) throw new FileStorageException("Invalid GCS URL: " + fileUrl, null);
+    return azureBlobService.generateReadSasUrl(fileUrl);
+    }
 
-        String bucket = path.substring(0, slash);
-        String object = path.substring(slash + 1);
-
-        // Create a signed URL valid for 10 minutes
-        return gcsService.generateV4GetUrl(bucket, object, Duration.ofMinutes(10));
-    }    
 }
 

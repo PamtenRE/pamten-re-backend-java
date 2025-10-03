@@ -146,7 +146,7 @@ public class JobService {
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<Job> jobPage = jobRepository.findActiveJobsOrderByPostedDateDesc(pageable);
-
+            
             JobListingPageResponse response = JobListingPageResponse.builder()
                     .jobs(jobPage.getContent().stream()
                             .map(this::convertToJobListingResponse)
