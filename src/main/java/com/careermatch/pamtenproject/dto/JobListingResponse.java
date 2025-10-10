@@ -27,4 +27,7 @@
 
         @NotNull(message = "Posted date is required")
         private LocalDate postedDate;
+
+        private String jobType;         
+        private String requiredSkills;  
     }

@@ -176,6 +176,8 @@ public class JobService {
                 .state(job.getLocation() != null ? job.getLocation().getState() : null)
                 .organizationName(job.getEmployer().getOrganizationName())
                 .postedDate(job.getPostedDate())
+                .jobType(job.getJobType())
+                .requiredSkills(job.getRequiredSkills())
                 .build();
     }
 
