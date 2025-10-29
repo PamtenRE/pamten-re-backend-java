@@ -62,12 +62,12 @@ jobs:
       # --------------------------------------------------------------
       # 4. Deploy from Manifest
       # --------------------------------------------------------------
-      - name: Deploy from manifest.yaml
-        run: |
-          echo "Starting deployment for environment: $ENVIRONMENT"
-          python3 scripts/deploy_from_manifest.py \
-            --manifest "$MANIFEST_FILE" \
-            --env "$ENVIRONMENT"
+      # - name: Deploy from manifest.yaml
+      #   run: |
+      #     echo "Starting deployment for environment: $ENVIRONMENT"
+      #     python3 scripts/deploy_from_manifest.py \
+      #       --manifest "$MANIFEST_FILE" \
+      #       --env "$ENVIRONMENT"
 
       # --------------------------------------------------------------
       # 5. Install Dependencies
