@@ -1,0 +1,112 @@
+name: Deploy RecruitEdge Java (Manifest-Based)
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+      - feature/**
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+
+    # Dynamically assign environment to the job
+    environment: ${{ github.ref_name == 'master' && 'prod' || 'dev' }}
+
+    env:
+      PYTHONUNBUFFERED: 1
+      MANIFEST_FILE: manifest.yaml
+      TAGS_FILE: tags.yaml
+
+    steps:
+      # --------------------------------------------------------------
+      # 1. Checkout Repository
+      # --------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------------------
+      # 2. Determine Environment (based on branch)
+      # --------------------------------------------------------------
+      - name: Set environment variables
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            echo "ENVIRONMENT=prod" >> "$GITHUB_ENV"
+            echo "PARAM_FILE=envs/parameters.prod.yaml" >> $GITHUB_ENV
+            echo "APP_NAME=recruitedge2-prod-java" >> $GITHUB_ENV
+            echo "RESOURCE_GROUP=recruitedge-prod-rg" >> "$GITHUB_ENV"
+          else
+            echo "ENVIRONMENT=dev" >> "$GITHUB_ENV"
+            echo "PARAM_FILE=envs/parameters.dev.yaml" >> $GITHUB_ENV
+            echo "APP_NAME=recruitedge2-dev-java" >> $GITHUB_ENV
+            echo "RESOURCE_GROUP=RGrp-PT_Recruitedge_Dev" >> "$GITHUB_ENV"
+          fi
+          echo "Using environment: $ENVIRONMENT"
+
+      # --------------------------------------------------------------
+      # 3. Azure Login (reads secrets from job environment automatically)
+      # --------------------------------------------------------------
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      # --------------------------------------------------------------
+      # 4. Deploy from Manifest
+      # --------------------------------------------------------------
+      - name: Deploy from manifest.yaml
+        run: |
+          echo "Starting deployment for environment: $ENVIRONMENT"
+          python3 scripts/deploy_from_manifest.py \
+            --manifest "$MANIFEST_FILE" \
+            --env "$ENVIRONMENT"
+
+      # --------------------------------------------------------------
+      # 5. Install Dependencies
+      # --------------------------------------------------------------
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # --------------------------------------------------------------
+      # 6. Artifacts Upload
+      # --------------------------------------------------------------
+      - name: Archive JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-artifact
+          path: target/*.jar
+
+      # --------------------------------------------------------------
+      # 7. Deploy to Azure App Service 
+      # --------------------------------------------------------------
+
+      - name: Deploy Java app to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: target/*.jar
+
+      # --------------------------------------------------------------
+      # 8. Verify Deployment Summary
+      # --------------------------------------------------------------
+      - name: Post-deployment verification
+        run: |
+          echo "Deployment complete for RecruitEdge ($ENVIRONMENT)"
+          echo "Resource Group: $RESOURCE_GROUP"
+          az resource list --resource-group "$RESOURCE_GROUP" --output table
