@@ -1,0 +1,105 @@
+
+# ===================================================================
+# RecruitEdge Infrastructure - Storage Account Test Manifest
+# ===================================================================
+
+
+# resourcesToDelete:
+#   - template: delete-resource
+#     variables:
+#       resourceGroupName: ${RESOURCE_GROUP}
+#       resourceName: recruitedgedevwebsa
+#       resourceType: Microsoft.Storage/storageAccounts
+#       apiVersion: 2023-05-01
+
+  resources:
+#   - template: storage
+#     variables:
+#       name: "recruitedge${ENVIRONMENT}websa"
+#       location: eastus
+#       resourceGroupName: ${RESOURCE_GROUP}
+#       enableStaticWebsite: true
+#       accessTier: Hot
+#       replicationType: LRS
+#       allowBlobPublicAccess: true
+#       enableHttpsOnly: true
+#       softDeleteRetentionDays: 7
+#       tags:
+#         component: frontend
+#         purpose: "React static hosting"
+#         tier: ui
+
+  - template: azure-functions
+    variables:
+      name: "recruitedge2-${ENVIRONMENT}-func"
+      location: eastus
+      resourceGroupName: ${RESOURCE_GROUP}
+      storageAccountName: "recruitedge2${ENVIRONMENT}websa"
+      runtime: python
+      skuName: Y1
+      alwaysOn: false
+      tags:
+        component: backend
+        purpose: "RecruitEdge Function API"
+        tier: backend
+        environment: ${ENVIRONMENT}
+      appSettings:
+        - name: "APP_ENV"
+          value: "${ENVIRONMENT}"
+        - name: "FRONTEND_URL"
+          value: "https://recruitedge2${ENVIRONMENT}web.z13.web.core.windows.net"
+        - name: "WEBSITE_RUN_FROM_PACKAGE"
+          value: "1"
+
+  - template: app-service
+    variables:
+      name: "recruitedge2-${ENVIRONMENT}-flask"
+      location: eastus
+      resourceGroupName: ${RESOURCE_GROUP}
+      skuName: "B1"
+      runtime: "python"
+      alwaysOn: true
+      tags:
+        component: backend
+        purpose: "RecruitEdge Flask API"
+        tier: backend
+        environment: ${ENVIRONMENT}
+      appSettings:
+        APP_ENV: ${ENVIRONMENT}
+        FLASK_ENV: ${ENVIRONMENT}
+        FLASK_APP: "app.py"
+        SCM_DO_BUILD_DURING_DEPLOYMENT: "true"
+        WEBSITE_RUN_FROM_PACKAGE: "1"
+        PYTHON_VERSION: "3.10"
+        FUNCTIONS_WORKER_RUNTIME: "python"
+        LOG_LEVEL: "INFO"
+        DB_HOST: "recruitedge-${ENVIRONMENT}-db.database.windows.net"
+        DB_NAME: "recruitedge"
+        DB_USER: "adminuser"
+        DB_PASS: "changeme"
+
+  - template: app-service
+    variables:
+      name: "recruitedge2-${ENVIRONMENT}-java"
+      location: eastus
+      resourceGroupName: ${RESOURCE_GROUP}
+      skuName: "B1"
+      runtime: "java"
+      alwaysOn: true
+      tags:
+        component: backend
+        purpose: "RecruitEdge Java API (Spring Boot / Maven)"
+        tier: backend
+        environment: ${ENVIRONMENT}
+      appSettings:
+        APP_ENV: ${ENVIRONMENT}
+        JAVA_VERSION: "17"
+        MAVEN_OPTS: "-Xmx1024m"
+        SCM_DO_BUILD_DURING_DEPLOYMENT: "true"
+        WEBSITE_RUN_FROM_PACKAGE: "1"
+        WEBSITES_CONTAINER_START_TIME_LIMIT: "1800"
+        LOG_LEVEL: "INFO"
+        DB_HOST: "recruitedge-${ENVIRONMENT}-db.database.windows.net"
+        DB_NAME: "recruitedge"
+        DB_USER: "adminuser"
+        DB_PASS: "changeme"

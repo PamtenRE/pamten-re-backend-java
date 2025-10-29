@@ -1,0 +1,10 @@
+global:
+  applicationId: recruitEdge
+  environment: ${ENVIRONMENT}
+  costCenter: FIN-2025
+  rsm: vinaykiranbh@gmail.com
+  managedBy: teamA
+  owner: Vinay Kiran Bhavanam
+  businessUnit: RE
+  compliance: SOX
+  confidentiality: Confidential
