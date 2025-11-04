@@ -38,13 +38,13 @@ jobs:
           if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
             echo "ENVIRONMENT=prod" >> "$GITHUB_ENV"
             echo "PARAM_FILE=envs/parameters.prod.yaml" >> "$GITHUB_ENV"
-            echo "APP_NAME=recruitedge2-prod-java" >> "$GITHUB_ENV"
-            echo "RESOURCE_GROUP=recruitedge-prod-rg" >> "$GITHUB_ENV"
+            echo "APP_NAME=pamten-re-backend-java-prod" >> "$GITHUB_ENV"
+            echo "RESOURCE_GROUP=pamten-re-rg-prod" >> "$GITHUB_ENV"
           else
             echo "ENVIRONMENT=dev" >> "$GITHUB_ENV"
             echo "PARAM_FILE=envs/parameters.dev.yaml" >> "$GITHUB_ENV"
-            echo "APP_NAME=recruitedge2-dev-java" >> "$GITHUB_ENV"
-            echo "RESOURCE_GROUP=RGrp-PT_Recruitedge_Dev" >> "$GITHUB_ENV"
+            echo "APP_NAME=pamten-re-backend-java-dev" >> "$GITHUB_ENV"
+            echo "RESOURCE_GROUP=pamten-re-rg-dev" >> "$GITHUB_ENV"
           fi
           echo "Using environment: $ENVIRONMENT"
 
@@ -57,6 +57,7 @@ jobs:
           client-id: ${{ secrets.CLIENT_ID }}
           tenant-id: ${{ secrets.TENANT_ID }}
           subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.SECRET }}
 
       # --------------------------------------------------------------
       # 4. Build Java app with Maven
@@ -87,7 +88,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.APP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: target/*.jar
 
       # --------------------------------------------------------------
