@@ -1,0 +1,26 @@
+# Copilot Instructions
+- **Tech Stack**: Spring Boot 3.5 (Java 17) with Spring Security, Data JPA, Validation; SQL Server is the only datastore and DDL is managed externally (`spring.jpa.hibernate.ddl-auto=none`).
+- **Domain Model**: `User` (string `userId`) owns roles, email, status flags; `Candidate`, `Recruiter`, and `Employer` extend user data via 1-1 relationships; `Job` links to `Employer`, `Location`, and `Industry`; `Application` references job/candidate via IDs; `Resume` attaches to a candidate.
+- **Key Services**: `AuthService` handles signup/login/password flows, generates unique recruiter/candidate IDs, enforces recruiter email suffix, and triggers welcome/reset emails.
+- **Recruiter Flow**: `RecruiterService` creates `Employer` + `Recruiter` records, issues sequential 5-digit employer numbers via `EmployerRepository.findMaxEmployerNumber()`, then marks `User.profileCompleted=true`.
+- **Candidate Flow**: `CandidateService.completeOrUpdateProfile` validates name/DOB/links, updates `User.profileCompleted`, and supports partial updates while enforcing LinkedIn/GitHub formats.
+- **Job Lifecycle**: `JobService.postJob` requires recruiters to have a completed profile, reuses or creates `Location` records by city/state/zip, and attaches industries; updates/deletes verify job ownership against recruiter’s `User.userId`.
+- **Applications**: `ApplicationService.apply` guards against duplicate `jobId` + `candidateId`, defaults status to 1 (“Applied”), and exposes candidate/job lookups plus withdraw functionality.
+- **Resume Handling**: `ResumeService` limits each candidate to three files, toggles one `isDefault`, uploads to Azure Blob Storage (container auto-created) via `AzureBlobService`, and emits SAS download links; expect `AZURE_STORAGE_KEY` and storage settings in `application.properties`.
+- **Email + Notifications**: `EmailService` relies on Spring Mail SMTP credentials; keep secrets out of source and set via environment overrides (`spring.mail.password`).
+- **Security Model**: `SecurityConfig` enables stateless JWT auth; `JwtAuthenticationFilter` pulls the bearer token, loads `UserDetails` via `CustomUserDetailsService`, and sets authorities based on `Role.roleName`.
+- **Authentication Gotcha**: JWT subjects are user emails, so `Authentication#getName()` returns the email; controllers needing `userId` must translate via `UserRepository.findByEmail(...)` (see `JobController`, `CandidateController`, `RecruiterController`).
+- **Authorization**: Method-level `@PreAuthorize` is used heavily; verify new endpoints add matching entries in `SecurityConfig.requestMatchers`.
+- **Logging**: `RequestLoggingInterceptor` injects a per-request UUID stored under `requestId` and logs both the inbound request and completion (or error) for correlation.
+- **Error Handling**: `GlobalExceptionHandler` maps domain exceptions to structured JSON (`ErrorResponse`); raise the existing custom exceptions (`com.careermatch...exception`) instead of generic runtime errors.
+- **Persistence Access**: Prefer Spring Data repositories in `repository/`; leverage existing helpers such as `RecruiterRepository.findByUser_UserId` and `JobRepository.findActiveJobsOrderByPostedDateDesc` rather than hand-rolled queries.
+- **Configuration**: Runtime config lives in `src/main/resources/application.properties`; JDBC URL targets Azure SQL with TrustServerCertificate; override secrets (`DB_PASSWORD`, `JWT_SECRET`, `EMAIL_PASSWORD`) through environment variables when running locally.
+- **Build & Run**: Use `./mvnw spring-boot:run` (or `mvn spring-boot:run` if Maven is on PATH) for local dev; run `./mvnw clean verify` before committing.
+- **SQL Migration**: Schema scripts (`database_setup.sql`, `database_migration.sql`) document the expected tables; keep Hibernate `ddl-auto=none` and apply DDL via SQL Server tooling.
+- **Resume Controller Quirk**: Resume endpoints still accept `email` query params; the service resolves `User`/`Candidate` internally and enforces ownership plus the 3-file limit.
+- **Job Ownership Check**: `JobService.updateJob` and `.deleteJob` validate against recruiter `userId`; convert the JWT email to a `User` first or pass the `userId` explicitly from the client.
+- **Azure Blob Config**: `AzureBlobConfig` builds the client from `azure.storage.account-name`, key, and endpoint; ensure `AZURE_STORAGE_KEY` is provided and that the container name matches Azure.
+- **JWT Blacklist Gap**: `AuthController.logout` records tokens in `JwtBlacklistService`, but the filter does not check the blacklist yet; expire tokens via TTL or add the check before relying on logout for security.
+- **Swagger & Health**: Swagger UI is exposed under `/swagger-ui/index.html`; `/api/test/v1/health` pings repositories and surfaces DB connectivity.
+- **DTO Reuse**: Request/response shapes live in `dto/`; reuse them in new endpoints to stay aligned with existing validation rules.
+- **Logging Correlation**: Every request gets a UUID via `RequestLoggingInterceptor`; downstream components can read `request.getAttribute("requestId")` to continue the trace.
