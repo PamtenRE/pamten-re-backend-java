@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "Jobs")
+@Table(name = "Jobs", schema = "db_owner")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +25,7 @@ public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "job_id")
-    private Integer jobId;
+    private Long jobId;
 
     @ManyToOne
     @JoinColumn(name = "employer_id", nullable = false)
@@ -92,4 +92,15 @@ public class Job {
             inverseJoinColumns = @JoinColumn(name = "industry_id")
     )
     private Set<Industry> industries;
+
+    @Column(name = "min_salary")
+    @Min(value = 0, message = "Minimum salary cannot be negative")
+    private Integer minSalary;
+
+    @Column(name = "max_salary")
+    @Min(value = 0, message = "Maximum salary cannot be negative")
+    private Integer maxSalary;
+
+    @Column(name = "department")
+    private String department;
 }

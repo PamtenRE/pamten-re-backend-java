@@ -1,55 +1,79 @@
 package com.careermatch.pamtenproject.controller;
 
-import com.careermatch.pamtenproject.dto.ApplyRequest;
+import com.careermatch.pamtenproject.dto.ApplicationApplyResponse;
+import com.careermatch.pamtenproject.dto.ApplicationResponse;
+import com.careermatch.pamtenproject.dto.ApplicationStatusUpdateRequest;
+import com.careermatch.pamtenproject.dto.ApplicationStatusUpdateResponse;
 import com.careermatch.pamtenproject.model.Application;
 import com.careermatch.pamtenproject.service.ApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/applications/v1")
+@RequestMapping("/api/applications")
 @RequiredArgsConstructor
 public class ApplicationController {
 
-    private final ApplicationService service;
+    private final ApplicationService applicationService;
 
-    // Candidate applies to a job
-    @PostMapping("/apply")
-    public ResponseEntity<?> apply(@RequestBody ApplyRequest req) {
-        // Default status_id = 1 (Applied)
-        Application app = service.apply(req.getJobId(), req.getCandidateId(), 1L, req.getNotes());
-        return ResponseEntity.ok(Map.of(
-                "applicationId", app.getApplicationId(),
-                "message", "Application submitted successfully!"
-        ));
+    // Apply to a job
+    @PostMapping("/v1/apply")
+    public ResponseEntity<ApplicationApplyResponse> apply(@RequestBody Application req) {
+        // Call service and return ApplicationResponse DTO
+        ApplicationApplyResponse response = applicationService.apply(
+                req.getJobId(),
+                req.getCandidateId(),
+                req.getStatusId(),
+                req.getNotes(),
+                req.getResumeId(),
+                req.getCoverLetter()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    // Get all jobs applied by a candidate
-    @GetMapping("/candidate/{candidateId}")
-    public List<Application> getCandidateApplications(@PathVariable Long candidateId) {
-        return service.getByCandidate(candidateId);
+    // Get all applications for a candidate
+    @GetMapping("/v1/candidate/{candidateId}")
+    public ResponseEntity<List<ApplicationResponse>> getByCandidate(@PathVariable Long candidateId) {
+        return ResponseEntity.ok(applicationService.getByCandidate(candidateId));
     }
 
-    // Recruiter: view all applications for a specific job
-    @GetMapping("/job/{jobId}")
-    public List<Application> getApplicationsForJob(@PathVariable Long jobId) {
-        return service.getByJob(jobId);
+    // Get all applications for a specific job
+    @GetMapping("/v1/job/{jobId}")
+    public ResponseEntity<List<Application>> getByJob(@PathVariable Long jobId) {
+        return ResponseEntity.ok(applicationService.getByJob(jobId));
     }
 
-    // Recruiter: update status of an application
-    @PutMapping("/{applicationId}/status/{statusId}")
-    public ResponseEntity<?> updateStatus(@PathVariable Long applicationId, @PathVariable Long statusId) {
-        service.updateStatus(applicationId, statusId);
-        return ResponseEntity.ok(Map.of("message", "Status updated successfully"));
+    // Update application status
+    @PutMapping("/v1/{applicationId}/status")
+    public ResponseEntity<ApplicationStatusUpdateResponse> updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestBody ApplicationStatusUpdateRequest request) {
+
+        Application updatedApp = applicationService.updateStatus(
+                applicationId,
+                request.getStatus(),
+                request.getNotes()
+        );
+
+        return ResponseEntity.ok(
+                ApplicationStatusUpdateResponse.builder()
+                    .applicationId(updatedApp.getApplicationId())
+                    .status(request.getStatus())
+                    .updatedAt(updatedApp.getUpdatedAt())
+                    .message("Status updated successfully")
+                    .build()
+        );
     }
 
-    // Candidate: withdraw their application
-    @DeleteMapping("/{applicationId}")
-    public ResponseEntity<?> withdraw(@PathVariable Long applicationId, @RequestParam Long candidateId) {
-        service.withdraw(applicationId, candidateId);
-        return ResponseEntity.ok(Map.of("message", "Application withdrawn"));
+
+    // Withdraw an application
+    @DeleteMapping("/v1/{applicationId}/candidate/{candidateId}")
+    public ResponseEntity<Void> withdraw(@PathVariable Long applicationId, @PathVariable Long candidateId) {
+        applicationService.withdraw(applicationId, candidateId);
+        return ResponseEntity.noContent().build();
     }
 }

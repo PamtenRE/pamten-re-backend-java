@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,6 +72,8 @@ public class JobService {
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .minSalary(request.getMinSalary())
+                .maxSalary(request.getMaxSalary())
                 .build();
 
         jobRepository.save(job);
@@ -106,6 +107,7 @@ public class JobService {
                 .zipCode(location.getZipCode())
                 .country(location.getCountry())
                 .industryNames(request.getIndustryNames())
+                .salary(formatSalaryRange(job.getMinSalary(), job.getMaxSalary()))
                 .build();
     }
 
@@ -168,6 +170,13 @@ public class JobService {
         }
     }
 
+    private String formatSalaryRange(Integer min, Integer max) {
+    if (min == null && max == null) return null;
+    if (min != null && max != null) return "$" + min + " - $" + max;
+    if (min != null) return "From $" + min;
+    return "Up to $" + max;
+    }
+
     private JobListingResponse convertToJobListingResponse(Job job) {
         return JobListingResponse.builder()
                 .jobId(job.getJobId())
@@ -178,6 +187,14 @@ public class JobService {
                 .postedDate(job.getPostedDate())
                 .jobType(job.getJobType())
                 .requiredSkills(job.getRequiredSkills())
+                .salary(formatSalaryRange(job.getMinSalary(), job.getMaxSalary())) 
+                .employmentType(job.getJobType())
+                .description(job.getDescription())
+                .billRate(job.getBillRate())
+                .durationMonths(job.getDurationMonths())
+                .industryNames(job.getIndustries() != null
+                    ? job.getIndustries().stream().map(Industry::getIndustryName).toList()
+                    : null)
                 .build();
     }
 
@@ -200,7 +217,7 @@ public class JobService {
         }
     }
 
-    public JobResponse updateJob(Integer jobId, JobUpdateRequest request, String userId) {
+    public JobResponse updateJob(Long jobId, JobUpdateRequest request, String userId) {
         log.info("Updating job: {} for user: {}", jobId, userId);
 
         try {
@@ -252,7 +269,7 @@ public class JobService {
         }
     }
 
-    public void deleteJob(Integer jobId, String userId) {
+    public void deleteJob(Long jobId, String userId) {
         log.info("Deleting job: {} for user: {}", jobId, userId);
 
         try {
@@ -292,6 +309,7 @@ public class JobService {
                 .state(job.getLocation() != null ? job.getLocation().getState() : null)
                 .zipCode(job.getLocation() != null ? job.getLocation().getZipCode() : null)
                 .country(job.getLocation() != null ? job.getLocation().getCountry() : null)
+                .salary(formatSalaryRange(job.getMinSalary(), job.getMaxSalary()))
                 .industryNames(job.getIndustries() != null ?
                         job.getIndustries().stream().map(Industry::getIndustryName).collect(Collectors.toList()) : null)
                 .build();

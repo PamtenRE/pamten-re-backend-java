@@ -6,14 +6,17 @@
     import jakarta.validation.constraints.NotBlank;
     import jakarta.validation.constraints.NotNull;
 
+    import java.math.BigDecimal;
     import java.time.LocalDate;
+    import java.util.List;
+
 
     @Data
     @Builder
     public class JobListingResponse {
         @NotNull(message = "Job ID is required")
         @Min(value = 1, message = "Job ID must be a positive number")
-        private Integer jobId;
+        private Long jobId;
 
         @NotBlank(message = "Job title is required")
         private String title;
@@ -30,4 +33,13 @@
 
         private String jobType;         
         private String requiredSkills;  
-    }
+
+        private String salary;          
+        private String employmentType;    
+        private String description;
+        private BigDecimal billRate;
+        private Integer durationMonths;
+        private List<String> industryNames;
+        
+
+}

@@ -10,15 +10,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface JobRepository extends JpaRepository<Job, Integer> {
-    List<Job> findByEmployerEmployerId(Integer employerId);
+public interface JobRepository extends JpaRepository<Job, Long> {
+    List<Job> findByEmployerEmployerId(Long employerId);
     List<Job> findByIsActiveTrue();
     List<Job> findByLocationLocationId(Integer locationId);
 
     @Query("SELECT j FROM Job j WHERE j.isActive = true AND j.title LIKE %:keyword% OR j.description LIKE %:keyword%")
     List<Job> searchJobsByKeyword(String keyword);
 
-    // Fix: Use custom query instead of method name
     @Query("SELECT j FROM Job j WHERE j.isActive = true ORDER BY j.postedDate DESC")
     Page<Job> findActiveJobsOrderByPostedDateDesc(Pageable pageable);
 }
