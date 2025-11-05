@@ -1,0 +1,99 @@
+name: Deploy RecruitEdge Java (Manifest-Based)
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+      - feature/**
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  JAVA_VERSION: "17"
+  PYTHONUNBUFFERED: 1
+  MANIFEST_FILE: manifest.yaml
+  TAGS_FILE: tags.yaml
+
+jobs:
+  deploy:
+    name: Deploy Java Backend
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'master' && 'prod' || 'dev' }}
+
+    steps:
+      # --------------------------------------------------------------
+      # 1. Checkout Repository
+      # --------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------------------
+      # 2. Determine Environment (based on branch)
+      # --------------------------------------------------------------
+      - name: Set environment variables
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            echo "ENVIRONMENT=prod" >> "$GITHUB_ENV"
+            echo "PARAM_FILE=envs/parameters.prod.yaml" >> "$GITHUB_ENV"
+            echo "APP_NAME=pamten-re-backend-java-prod" >> "$GITHUB_ENV"
+            echo "RESOURCE_GROUP=pamten-re-rg-prod" >> "$GITHUB_ENV"
+          else
+            echo "ENVIRONMENT=dev" >> "$GITHUB_ENV"
+            echo "PARAM_FILE=envs/parameters.dev.yaml" >> "$GITHUB_ENV"
+            echo "APP_NAME=pamten-re-backend-java-dev" >> "$GITHUB_ENV"
+            echo "RESOURCE_GROUP=pamten-re-rg-dev" >> "$GITHUB_ENV"
+          fi
+          echo "Using environment: $ENVIRONMENT"
+
+      # --------------------------------------------------------------
+      # 3. Azure Login (OIDC-based)
+      # --------------------------------------------------------------
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      # --------------------------------------------------------------
+      # 4. Build Java app with Maven
+      # --------------------------------------------------------------
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # --------------------------------------------------------------
+      # 5. Upload Build Artifact (optional)
+      # --------------------------------------------------------------
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-artifact
+          path: target/*.jar
+
+      # --------------------------------------------------------------
+      # 6. Deploy to Azure App Service
+      # --------------------------------------------------------------
+      - name: Deploy Java app to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          package: target/*.jar
+
+      # --------------------------------------------------------------
+      # 7. Verify Deployment Summary
+      # --------------------------------------------------------------
+      - name: Post-deployment verification
+        run: |
+          echo "Deployment complete for RecruitEdge ($ENVIRONMENT)"
+          echo "Resource Group: $RESOURCE_GROUP"
+          echo "URL: https://${APP_NAME}.azurewebsites.net"
