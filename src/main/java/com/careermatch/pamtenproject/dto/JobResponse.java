@@ -21,7 +21,7 @@ import java.util.List;
 public class JobResponse {
     @NotNull(message = "Job ID is required")
     @Min(value = 1, message = "Job ID must be a positive number")
-    private Integer jobId;
+    private Long jobId;
 
     @NotBlank(message = "Employer number is required")
     private String employerNumber;
@@ -70,4 +70,7 @@ public class JobResponse {
 
     // Industry details
     private List<String> industryNames;
+
+    private String salary;
+
 }

@@ -46,7 +46,7 @@ public class JobController {
     @PutMapping("/{jobId}")
     @PreAuthorize("hasAuthority('Recruiter')")
     public ResponseEntity<JobResponse> updateJob(
-            @PathVariable @Min(1) Integer jobId,
+            @PathVariable @Min(1) Long jobId,
             @Valid @RequestBody JobUpdateRequest request,
             Authentication authentication) {
 
@@ -58,7 +58,7 @@ public class JobController {
     @DeleteMapping("/{jobId}/{userId}")
     @PreAuthorize("hasAuthority('Recruiter')")
     public ResponseEntity<String> deleteJob(
-            @PathVariable @Min(1) Integer jobId,
+            @PathVariable @Min(1) Long jobId,
             @PathVariable @NotBlank String userId) {
         jobService.deleteJob(jobId, userId);
         return ResponseEntity.ok("Job deleted successfully");

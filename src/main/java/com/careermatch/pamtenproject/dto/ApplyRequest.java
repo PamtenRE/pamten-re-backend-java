@@ -8,5 +8,7 @@ import lombok.Setter;
 public class ApplyRequest {
     private Long jobId;
     private Long candidateId;
+    private Long resumeId;
     private String notes;
+    private String coverLetter;
 }

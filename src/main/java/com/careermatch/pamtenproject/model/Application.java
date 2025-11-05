@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "applications")
+@Table(name = "applications", schema = "db_owner")
 public class Application {
 
     @Id
@@ -48,4 +48,12 @@ public class Application {
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Column(name = "resume_id")
+    private Long resumeId;
+
+    @Column(name = "cover_letter")
+    private String coverLetter;
+
+
 }

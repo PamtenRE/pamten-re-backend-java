@@ -10,7 +10,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Employers")
+@Table(name = "Employers", schema = "db_owner")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +20,7 @@ public class Employer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "employer_id")
-    private Integer employerId;
+    private Long employerId;
 
     @Column(name = "employer_number", nullable = false, unique = true)
     @NotBlank(message = "Employer number is required")

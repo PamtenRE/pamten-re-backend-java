@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface EmployerRepository extends JpaRepository<Employer, Integer> {
+public interface EmployerRepository extends JpaRepository<Employer, Long> {
     Optional<Employer> findByUser_UserId(String userId);
     Optional<Employer> findByEmployerNumber(String employerNumber);
     @Query("SELECT MAX(CAST(e.employerNumber AS integer)) FROM Employer e")

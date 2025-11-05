@@ -50,4 +50,11 @@ public class JobPostRequest {
 
     // Industry details
     private List<String> industryNames;
+
+    @Min(value = 0, message = "Minimum salary cannot be negative")
+    private Integer minSalary;
+
+    @Min(value = 0, message = "Maximum salary cannot be negative")
+    private Integer maxSalary;
+
 }

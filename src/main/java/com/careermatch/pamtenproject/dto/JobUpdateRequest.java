@@ -50,4 +50,7 @@ public class JobUpdateRequest {
 
     // Industry details
     private List<String> industryNames;
+
+    private String salary;
+
 }

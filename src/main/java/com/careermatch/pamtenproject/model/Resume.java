@@ -10,7 +10,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Resumes")
+@Table(name = "Resumes", schema = "db_owner")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
